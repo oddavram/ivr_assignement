@@ -30,7 +30,7 @@ class Server:
     # Store message received
     self.square_img_2 = data
     self.compute_dist_from_base()
-    # self.compute_coords()
+    self.compute_coords()
 
   def compute_dist_from_base(self):
     if self.square_img_1 is not None and self.square_img_2 is not None:
@@ -49,13 +49,26 @@ class Server:
 
       distance_to_base = math.sqrt(horizontal_distance^2 + vertical_distance^2)
 
-      print("distance_to_base")
+      print("Distance_to_base in pixels (Need to add conversion!!)")
       print(distance_to_base)
 
       
-  # def compute_coords(self):
-  #   if self.square_img_1 is not None and self.square_img_2 is not None:
-      
+  def compute_coords(self):
+    if self.square_img_1 is not None and self.square_img_2 is not None:
+      x_img_1 = self.square_img_1[0]
+      x_img_2 = self.square_img_2[0]
+      y_img_1 = self.square_img_1[1]
+      y_img_2 = self.square_img_2[1]
+
+      coord_x = x_img_2
+      coord_y = x_img_1
+      coord_z = y_img_1
+
+      print("Coordinates of the square")
+      print("x : {}".format(coord_x))
+      print("y : {}".format(coord_y))
+      print("z : {}".format(coord_z))
+
 
 
 class find_target:
@@ -92,9 +105,8 @@ class find_target:
       print(e)
 
     square_image1 = self.detect_square(cv_image1)
-    print("square_image1")
-    print(square_image1)
-    # return square_image1
+    # print("square_image1")
+    # print(square_image1)
     self.server.img_1_callback(square_image1)
 
   # Recieve data from camera 1, process it, and publish
@@ -109,9 +121,8 @@ class find_target:
       print(e)
 
     square_image2 = self.detect_square(cv_image2)
-    print("square_image2")
-    print(square_image2)
-    # return square_image2
+    # print("square_image2")
+    # print(square_image2)
     self.server.img_2_callback(square_image2)
 
 
