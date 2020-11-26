@@ -9,6 +9,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from std_msgs.msg import Float64MultiArray, Float64
 from cv_bridge import CvBridge, CvBridgeError
+import math
 
 
 class Server:
@@ -16,6 +17,8 @@ class Server:
   def __init__(self):
     self.square_img_1 = None
     self.square_img_2 = None
+    self.base_x_coord = 400
+    self.base_y_coord = 550
 
   def img_1_callback(self, data):
     # Store message received
@@ -27,15 +30,32 @@ class Server:
     # Store message received
     self.square_img_2 = data
     self.compute_dist_from_base()
-    self.compute_coords()
+    # self.compute_coords()
 
   def compute_dist_from_base(self):
     if self.square_img_1 is not None and self.square_img_2 is not None:
-      print("Not none distance")
+      x_img_1 = self.square_img_1[0]
+      x_img_2 = self.square_img_2[0]
+      y_img_1 = self.square_img_1[1]
+      y_img_2 = self.square_img_2[1]
 
-  def compute_coords(self):
-    if self.square_img_1 is not None and self.square_img_2 is not None:
-      print("Not none coords")
+      img_1_horizontal = abs(x_img_1 - self.base_x_coord)
+      img_2_horizontal = abs(x_img_2 - self.base_x_coord)
+      img_1_vertical = abs(y_img_1 - self.base_y_coord)
+      img_2_vertical = abs(y_img_2 - self.base_y_coord)
+
+      horizontal_distance = int(math.sqrt(img_1_horizontal^2 + img_2_horizontal^2))
+      vertical_distance = int(math.sqrt(img_1_vertical^2 + img_2_vertical^2))
+
+      distance_to_base = math.sqrt(horizontal_distance^2 + vertical_distance^2)
+
+      print("distance_to_base")
+      print(distance_to_base)
+
+      
+  # def compute_coords(self):
+  #   if self.square_img_1 is not None and self.square_img_2 is not None:
+      
 
 
 class find_target:
