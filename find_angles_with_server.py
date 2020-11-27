@@ -10,6 +10,8 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Float64MultiArray, Float64
 from cv_bridge import CvBridge, CvBridgeError
 import math
+import message_filters
+from sensor_msgs.msg import JointState
 
 
 class Server:
@@ -25,12 +27,40 @@ class Server:
     self.ja2 = None
     self.ja3 = None
     self.ja4 = None
+    self.joints = Float64MultiArray()
+    self.correct_ja2 = None
+
+    rospy.init_node('image_processing', anonymous=True)
+
+    self.ja_pub = rospy.Publisher("ja_pub", Float64MultiArray, queue_size = 10)
+
+    # self.correct_ja2 = rospy.Subscriber("/robot/joint2_postition_controller/command", Float64, self.print_correct_ja2)
+    
+    self.bridge = CvBridge()
+
+
+
 
   def circle_img_1_callback(self, circle2, circle3, circle4):
     # Store message received
     self.circle_2_img_1 = circle2
     self.circle_3_img_1 = circle3
     self.circle_4_img_1 = circle4
+    self.compute_angle_joint2()
+    self.compute_angle_joint3()
+    self.compute_angle_joint4()
+    a = np.array([self.ja2, self.ja3, self.ja4])
+    print("ja2, ja3, ja4")
+    print(a)
+    # b = self.angles
+    # print("Correct ja2, ja3, ja4")
+    # print(b)
+    # print("Finished printing")
+    self.joints.data = a
+    try:
+      self.ja_pub.publish(self.joints)
+    except CvBridgeError as e:
+      print(e)
 
 
   def circle_img_2_callback(self, circle2, circle3, circle4):
@@ -41,6 +71,12 @@ class Server:
     self.compute_angle_joint2()
     self.compute_angle_joint3()
     self.compute_angle_joint4()
+    a = np.array([self.ja2, self.ja3, self.ja4])
+    self.joints.data = a
+    try:
+      self.ja_pub.publish(self.joints)
+    except CvBridgeError as e:
+      print(e)
 
   def pixel2meter_callback(self, data):
     self.pixel2meter = data
@@ -60,7 +96,7 @@ class Server:
     circle2Pos = a * self.circle_2_img_1
     circle3Pos = a * self.circle_3_img_1
     self.ja3 = np.arctan2(circle2Pos[0]- circle3Pos[0], circle2Pos[1] - circle3Pos[1])
-    print("compute_angle_joint3 - {}".format(self.ja3))
+    print("compute_angle_joint3 - {}".format(-self.ja3))
 
 
   def compute_angle_joint4(self):
@@ -69,6 +105,13 @@ class Server:
     circle4Pos = a * self.circle_4_img_2
     self.ja4 = np.arctan2(circle3Pos[0]- circle4Pos[0], circle3Pos[1] - circle4Pos[1]) - self.ja2
     print("compute_angle_joint4 - {}".format(self.ja4))
+
+
+  def print_correct_ja2(self, data):
+    self.correct_ja2 = data
+    print("self.correct_ja2")    
+    print(self.correct_ja2)
+
 
 
 class find_angles:
@@ -85,6 +128,7 @@ class find_angles:
     # initialize a publisher to send images from camera1 to a topic named image_topic1
     # self.image_sub1 = rospy.Subscriber("image_topic1",Image, queue_size = 1)
     # self.image_sub2 = rospy.Subscriber("image_topic1",Image, queue_size = 1)
+
 
     # initialize a subscriber to recieve messages rom a topic named /robot/camera1/image_raw and use callback function to recieve data
     self.image_sub1 = rospy.Subscriber("/camera1/robot/image_raw",Image,self.callback1)
@@ -197,5 +241,3 @@ def main(args):
 # run the code if the node is called
 if _name_ == '_main_':
     main(sys.argv)
-
-Type a message...
